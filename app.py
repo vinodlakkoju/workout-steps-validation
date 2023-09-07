@@ -1,26 +1,22 @@
-import flask
-from flask import Flask
-from flask_cors import CORS
+from fastapi import FastAPI
+import uvicorn
 import json
-import os
-from time import time
 from DetectionEngine import DetectEngine
 
 
-
 WEB_IP_ADR = '0.0.0.0'
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
 
-@app.route('/healthcheck', methods=['GET'])
+@app.get('/healthcheck')
 def healthCheck() -> str:
     return 'I am okay'
 
-@app.route('/detectfraud/<user_id>/<score_date>', methods=['GET'])
+@app.get('/detectfraud/{user_id}/{score_date}')
 def detectFraud(user_id, score_date) -> str:
-    de = DetectEngine()
-    result, reason = de.isValidScore(int(user_id), score_date)
-    return json.dumps({'result': result, 'reason': reason})
+    de = DetectEngine(int(user_id), score_date)
+    result, reason = de.isValidScore()
+    # return json.dumps({'result': result, 'reason': reason})
+    return str({'result': result, 'reason': reason})
 
 
 def runService() -> None:
@@ -29,7 +25,8 @@ def runService() -> None:
     :return: None
     """
     app.debug = True
-    app.run(host=WEB_IP_ADR, port=9090, processes=True)
+    # uvicorn.run(app, host=WEB_IP_ADR, port=9090)
+    uvicorn.run(app, port=8080)
 
 
 if __name__ == '__main__':

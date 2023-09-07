@@ -1,0 +1,6 @@
+numpy
+pandas
+#logging
+pymysql
+fastapi
+uvicorn

@@ -2,35 +2,36 @@ import pandas as pd
 from DataAccess import Database
 
 class DetectEngine:
-    def __init__(self):
-        self.__db = Database()
+    def __init__(self, user_id: int, current_date: str):
+        self.__current_date = current_date
+        db = Database(user_id, current_date)
+        self.__user_data_df = db.getData()
 
-    def __maxScoreRule(self, user_id: int, current_date: str) -> bool:
-        data_df = self.__db.getOneDayUserData(user_id, current_date)
-        current_score = list(data_df['distance'])[0]
-        return False if current_score >= 25.0 else True
+    def __maxScoreRule(self) -> bool:
+        df = self.__user_data_df
+        self.__current_score = df.loc[df['date_time'] == self.__current_date, 'distance'].values[0]
+        return False if self.__current_score >= 25.0 else True
 
-    def __averageScoreRule(self, user_id: int, current_date: str) -> bool:
-        previous_data_df = self.__db.getOneMonthUserData(user_id)
-        current_score = list(previous_data_df[previous_data_df['date_time'] == current_date]['distance'])[0]
-        past_data_df = previous_data_df[previous_data_df['date_time'] != current_date]
-        average = past_data_df.mean()['distance']
-        return False if (average * 5 < current_score) else True
+    def __averageScoreRule(self) -> bool:
+        past_data_df = self.__user_data_df[self.__user_data_df['date_time'] != self.__current_date]
+        self.__average_score = past_data_df['distance'].mean()
+        return False if (self.__average_score * 5 < self.__current_score) else True
 
-    def isValidScore(self, user_id: int, current_date: str):
+    def isValidScore(self):
         result = False
         reason = ''
-        if self.__maxScoreRule(user_id, current_date):
-            if self.__averageScoreRule(user_id, current_date):
+        if self.__maxScoreRule():
+            if self.__averageScoreRule():
                 result = True
             else:
-                reason = "Not matching with average score"
+                reason = f"Current score({round(self.__current_score,2)}km) faraway to average score({round(self.__average_score,2)})"
         else:
-            reason = "Above the possible valid score"
+            reason = f"Impossible score of {round(self.__current_score, 2)}km recorded in a day"
         return result, reason
 
 
 
 if __name__ == '__main__':
-    de = DetectEngine()
-    result, reason = de.isValidScore(454, '2023-08-09')
+    de = DetectEngine(1143, '2023-09-06')
+    result, reason = de.isValidScore()
+    print(result, reason)

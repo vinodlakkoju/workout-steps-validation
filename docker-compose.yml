@@ -1,0 +1,11 @@
+version: "3.2"
+services:
+    fraudcheckservice:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: FraudCheckService
+        ports:
+            - "9090:9090"
+        network_mode: "bridge"
+        restart: unless-stopped
