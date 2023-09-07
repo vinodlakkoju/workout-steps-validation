@@ -7,9 +7,7 @@ import time
 from Utils import Utils as ut
 import pandas as pd
 
-DB_CONNECTION_STRING = "motionapp.cedjav3ak2sb.us-west-1.rds.amazonaws.com"
-DB_USERNAME = "pythonuser1"
-DB_PASSWORD = "@1Python@23"
+
 
 class Database:
     def __init__(self, user_id: int, current_date: str):
